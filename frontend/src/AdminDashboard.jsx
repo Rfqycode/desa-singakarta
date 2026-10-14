@@ -3,6 +3,27 @@ import {
     Users, Plus, Trash2, Edit, Search, LogOut, LayoutDashboard, ChevronRight, Lock,
     FileText, BarChart3, Database, UserPlus, Printer, Building2, Filter, Shield
 } from 'lucide-react';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement,
+} from 'chart.js';
+import { Bar, Doughnut } from 'react-chartjs-2';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement
+);
 
 export default function AdminPanel() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -39,7 +60,7 @@ export default function AdminPanel() {
     const [wargaList, setWargaList] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // 3. Ambil data dari Django API saat halaman admin dimuat
+    // 3. Ambil data dari Django API saat halaman admin dimuat[cite: 16]
     useEffect(() => {
         fetch('http://127.0.0.1:8000/api/warga/')
             .then((res) => res.json())
@@ -54,7 +75,7 @@ export default function AdminPanel() {
     const [selectedWargaSurat, setSelectedWargaSurat] = useState(null);
     const [keperluanSurat, setKeperluanSurat] = useState('Pengurusan KTP / KK Baru');
 
-    // Handler Login Admin
+    // Handler Login Admin[cite: 16]
     const handleLogin = (e) => {
         e.preventDefault();
         if (passwordInput === 'admin123' || passwordInput === 'admin' || passwordInput === 'rt123') {
@@ -68,17 +89,15 @@ export default function AdminPanel() {
         }
     };
 
-    // Handler Simpan / Edit Data Warga (Terhubung ke Backend Django)
+    // Handler Simpan / Edit Data Warga (Terhubung ke Backend Django)[cite: 16]
     const handleSaveWarga = async (e) => {
         e.preventDefault();
 
-        // Tentukan RT mana yang disimpan (Jika Pengurus RT -> RT-nya terkunci ke RT diri sendiri)
         const rtToSave = loginRole === 'RT_USER' ? selectedUserRt : formData.rt;
         const finalData = { ...formData, rt: rtToSave };
 
         try {
             if (isEditing) {
-                // PUT ke Django API
                 const response = await fetch(`http://127.0.0.1:8000/api/warga/${isEditing}/`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -94,11 +113,9 @@ export default function AdminPanel() {
                     setActiveTab('database');
                 } else {
                     const errData = await response.json();
-                    console.error("Error dari Django Backend:", errData);
                     alert(`Gagal memperbarui data: ${JSON.stringify(errData)}`);
                 }
             } else {
-                // CREATE (POST) ke Django API
                 const response = await fetch('http://127.0.0.1:8000/api/warga/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -113,7 +130,6 @@ export default function AdminPanel() {
                     setActiveTab('database');
                 } else {
                     const errData = await response.json();
-                    console.error("Error dari Django Backend:", errData);
                     alert(`Gagal menambah data. Pastikan NIK unik.`);
                 }
             }
@@ -151,13 +167,39 @@ export default function AdminPanel() {
         }
     };
 
-    // Kalkulasi Rekapitulasi Statistik
+    // Kalkulasi Rekapitulasi Statistik[cite: 16]
     const totalWarga = wargaList.length;
     const totalLaki = wargaList.filter(w => w.jenis_kelamin === 'Laki-laki').length;
     const totalPerempuan = wargaList.filter(w => w.jenis_kelamin === 'Perempuan').length;
     const totalPenerimaBantuan = wargaList.filter(w => w.jenis_bantuan && w.jenis_bantuan !== 'Tidak Ada').length;
 
-    // Filtered Warga List (Sesuai Hak Akses & Filter)
+    // Data untuk Chart.js (Persebaran per RT)
+    const rtCounts = daftarRT.map(rt => wargaList.filter(w => w.rt === rt).length);
+
+    const rtChartData = {
+        labels: daftarRT.map(rt => `RT ${rt}`),
+        datasets: [
+            {
+                label: 'Jumlah Warga',
+                data: rtCounts,
+                backgroundColor: '#059669',
+                borderRadius: 8,
+            },
+        ],
+    };
+
+    const genderChartData = {
+        labels: ['Laki-laki', 'Perempuan'],
+        datasets: [
+            {
+                data: [totalLaki, totalPerempuan],
+                backgroundColor: ['#059669', '#0f172a'],
+                borderWidth: 0,
+            },
+        ],
+    };
+
+    // Filtered Warga List[cite: 16]
     const filteredWarga = wargaList.filter(w => {
         const matchSearch = (w.nama && w.nama.toLowerCase().includes(searchTerm.toLowerCase())) ||
             (w.nik && w.nik.includes(searchTerm)) ||
@@ -169,7 +211,7 @@ export default function AdminPanel() {
         return matchSearch && matchRT;
     });
 
-    // 1. HALAMAN LOGIN RAHASIA (/admin)
+    // 1. HALAMAN LOGIN RAHASIA (/admin)[cite: 16]
     if (!isAuthenticated) {
         return (
             <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 font-sans text-slate-800">
@@ -243,7 +285,7 @@ export default function AdminPanel() {
         );
     }
 
-    // 2. DASHBOARD UTAMA ADMIN
+    // 2. DASHBOARD UTAMA ADMIN[cite: 16]
     return (
         <div className="flex h-screen bg-slate-100 font-sans text-slate-800 overflow-hidden">
 
@@ -487,7 +529,6 @@ export default function AdminPanel() {
                                             </div>
                                         </div>
 
-                                        {/* DROPDOWN RT (TERKUNCI JIKA PENGURUS RT) */}
                                         <div className="grid grid-cols-3 gap-2">
                                             <div>
                                                 <label className="text-[11px] font-extrabold text-emerald-800">
@@ -671,7 +712,7 @@ export default function AdminPanel() {
                         </div>
                     )}
 
-                    {/* ================= 3. REKAPITULASI ================= */}
+                    {/* ================= 3. REKAPITULASI DENGAN CHART.JS ================= */}
                     {activeTab === 'rekapitulasi' && (
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -697,6 +738,23 @@ export default function AdminPanel() {
                                     <span className="text-xs font-bold uppercase tracking-wider text-indigo-100">Cakupan Wilayah</span>
                                     <h3 className="text-4xl font-extrabold">9 RT</h3>
                                     <p className="text-[10px] text-indigo-200">Desa Singakarta</p>
+                                </div>
+                            </div>
+
+                            {/* SECTION DIAGRAM / GRAFIK INTERAKTIF CHART.JS */}
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                                <div className="md:col-span-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
+                                    <h4 className="font-bold text-slate-900 text-sm">Grafik Persebaran Penduduk per RT (RT 001 - RT 009)</h4>
+                                    <div className="h-72 flex items-center justify-center">
+                                        <Bar data={rtChartData} options={{ responsive: true, maintainAspectRatio: false }} />
+                                    </div>
+                                </div>
+
+                                <div className="md:col-span-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
+                                    <h4 className="font-bold text-slate-900 text-sm">Rasio Jenis Kelamin Warga</h4>
+                                    <div className="h-72 flex items-center justify-center">
+                                        <Doughnut data={genderChartData} options={{ responsive: true, maintainAspectRatio: false }} />
+                                    </div>
                                 </div>
                             </div>
                         </div>
