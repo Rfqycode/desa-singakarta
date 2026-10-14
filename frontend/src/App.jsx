@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import {
   Users, MapPin, Building2, Search, ArrowRight,
@@ -8,7 +8,19 @@ import { initialWargaData, faskesData, beritaData, galeriData } from './mockData
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('beranda');
-  const [wargaList] = useState(initialWargaData);
+  const [wargaList, setWargaList] = useState([]);
+
+
+  useEffect(() => {
+    // Fetch data from the backend API
+    fetch('http://localhost:8000/api/warga/')
+      .then(response => response.json())
+      .then(data =>
+        // Menangani data baik format list biasa maupun yang menggunakan paginasi (data.results)
+        setWargaList(data))
+
+      .catch(error => console.error('Gagal mengambil data:', error));
+  }, []);
 
   // Filter Peta Faskes
   const [searchMap, setSearchMap] = useState('');
