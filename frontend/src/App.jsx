@@ -1,26 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import {
-  Users, MapPin, Building2, Search, ArrowRight,
+  MapPin, Building2, Search, ArrowRight,
   FileText, HeartPulse
 } from 'lucide-react';
-import { initialWargaData, faskesData, beritaData, galeriData } from './mockData';
+import { faskesData, beritaData, galeriData } from './mockData';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('beranda');
-  const [wargaList, setWargaList] = useState([]);
-
-
-  useEffect(() => {
-    // Fetch data from the backend API
-    fetch('http://localhost:8000/api/warga/')
-      .then(response => response.json())
-      .then(data =>
-        // Menangani data baik format list biasa maupun yang menggunakan paginasi (data.results)
-        setWargaList(data))
-
-      .catch(error => console.error('Gagal mengambil data:', error));
-  }, []);
 
   // Filter Peta Faskes
   const [searchMap, setSearchMap] = useState('');
@@ -51,7 +38,6 @@ export default function App() {
             {[
               { id: 'beranda', label: 'Beranda' },
               { id: 'profil', label: 'Profil & Visi' },
-              { id: 'infografis', label: 'Data Warga' },
               { id: 'maps', label: 'Peta Faskes' },
               { id: 'berita', label: 'Kabar Desa' },
             ].map((tab) => (
@@ -84,7 +70,7 @@ export default function App() {
                 <div className="md:col-span-8 space-y-6">
                   <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold tracking-wide backdrop-blur-sm">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    Portal Informasi & Kependudukan RT 054
+                    Portal Informasi & Layanan Warga RT 054
                   </div>
                   <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-none text-white">
                     Selamat Datang di <br />
@@ -93,31 +79,23 @@ export default function App() {
                     </span>
                   </h1>
                   <p className="text-slate-300 text-base md:text-lg max-w-2xl leading-relaxed font-normal">
-                    Pusat layanan digital terpadu untuk pendataan warga RT 054, penyebaran berita kegiatan desa, serta pemetaan fasilitas kesehatan terdekat secara akurat.
+                    Pusat informasi digital terpadu untuk warga RT 054, penyebaran berita kegiatan desa, serta pemetaan fasilitas kesehatan terdekat secara akurat.
                   </p>
                   <div className="pt-2 flex flex-wrap gap-3">
                     <button onClick={() => setActiveTab('maps')} className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3.5 rounded-2xl font-bold text-sm shadow-xl shadow-emerald-600/30 flex items-center gap-2 transition hover:-translate-y-0.5">
                       <HeartPulse className="w-4 h-4" /> Cari Rumah Sakit
                     </button>
-                    <button onClick={() => setActiveTab('infografis')} className="bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 px-6 py-3.5 rounded-2xl font-semibold text-sm backdrop-blur-sm transition">
-                      Buku Adminduk Warga
+                    <button onClick={() => setActiveTab('profil')} className="bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 px-6 py-3.5 rounded-2xl font-semibold text-sm backdrop-blur-sm transition">
+                      Profil Desa
                     </button>
                   </div>
                 </div>
               </div>
             </section>
 
-            {/* QUICK ACCESS / CARD MENU (HANYA 3 KARTU DENGAN GRID PAS) */}
+            {/* QUICK ACCESS / CARD MENU */}
             <section className="max-w-7xl mx-auto px-4 md:px-6 -mt-10 relative z-30">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div onClick={() => setActiveTab('infografis')} className="bg-white p-6 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 hover:border-emerald-300 cursor-pointer group transition-all duration-300 hover:-translate-y-1">
-                  <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 mb-3 group-hover:bg-emerald-600 group-hover:text-white transition">
-                    <Users className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-bold text-slate-800 group-hover:text-emerald-600 transition">Sensus Penduduk</h3>
-                  <p className="text-xs text-slate-500 mt-1">Data kependudukan RT 054 secara transparan</p>
-                </div>
-
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div onClick={() => setActiveTab('maps')} className="bg-white p-6 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 hover:border-emerald-300 cursor-pointer group transition-all duration-300 hover:-translate-y-1">
                   <div className="w-12 h-12 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 mb-3 group-hover:bg-teal-600 group-hover:text-white transition">
                     <MapPin className="w-6 h-6" />
@@ -146,25 +124,19 @@ export default function App() {
                     </div>
                     <div>
                       <h3 className="font-bold text-slate-900">Ketua RT. 054 Desa Singakarta</h3>
-                      <p className="text-xs text-slate-500">Pengantar Buku Adminduk Digital</p>
+                      <p className="text-xs text-slate-500">Pengantar Informasi Digital</p>
                     </div>
                   </div>
                   <p className="text-slate-600 text-sm leading-relaxed italic">
-                    "Website ini dihadirkan sebagai sarana kemudahan bagi warga Singakarta khususnya di RT 054. Melalui keterbukaan data kependudukan dan pemetaan fasilitas kesehatan, kita wujudkan lingkungan desa yang tertib, sehat, dan modern."
+                    "Website ini dihadirkan sebagai sarana kemudahan bagi warga Singakarta khususnya di RT 054. Melalui keterbukaan informasi kegiatan dan pemetaan fasilitas kesehatan, kita wujudkan lingkungan desa yang tertib, sehat, dan modern."
                   </p>
                 </div>
 
-                <div className="md:col-span-5 grid grid-cols-2 gap-4">
-                  <div className="bg-emerald-900 text-white p-6 rounded-3xl shadow-lg relative overflow-hidden">
-                    <p className="text-emerald-300 text-xs font-semibold uppercase tracking-wider">Total Penduduk</p>
-                    <h4 className="text-4xl font-extrabold mt-2">{wargaList.length} Jiwa</h4>
-                    <p className="text-[11px] text-emerald-200 mt-1">Terdata di RT 054</p>
-                  </div>
-
+                <div className="md:col-span-5 grid grid-cols-1 gap-4">
                   <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-lg relative overflow-hidden">
                     <p className="text-teal-400 text-xs font-semibold uppercase tracking-wider">Peta Faskes</p>
                     <h4 className="text-4xl font-extrabold mt-2">{faskesData.length} Lokasi</h4>
-                    <p className="text-[11px] text-slate-400 mt-1">RS & Puskesmas</p>
+                    <p className="text-[11px] text-slate-400 mt-1">RS & Puskesmas Terdaftar</p>
                   </div>
                 </div>
               </div>
@@ -208,60 +180,13 @@ export default function App() {
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-4">
               <h2 className="text-2xl font-bold text-slate-900 border-b pb-3">Profil Wilayah Desa Singakarta</h2>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Desa Singakarta merupakan salah satu wilayah yang terus berkembang di Sangatta, Kutai Timur. Sistem Informasi Kependudukan RT 054 diciptakan untuk mempermudah koordinasi antar warga, pengurus RT, dan pemerintah desa secara efisien dan transparan.
+                Desa Singakarta merupakan salah satu wilayah yang terus berkembang di Sangatta, Kutai Timur. Portal informasi RT 054 diciptakan untuk mempermudah koordinasi antar warga, pengurus RT, dan pemerintah desa secara efisien dan transparan.
               </p>
             </div>
           </div>
         )}
 
-        {/* ==================== TAB 3: BUKU ADMINDUK ==================== */}
-        {activeTab === 'infografis' && (
-          <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 space-y-6">
-            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900">Buku Adminduk & Kependudukan RT. 054</h2>
-                <p className="text-xs text-slate-500">Rekapitulasi data resmi warga Desa Singakarta</p>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead>
-                    <tr className="bg-slate-50 text-slate-600 text-xs font-bold uppercase tracking-wider">
-                      <th className="p-3.5 border-b">NIK</th>
-                      <th className="p-3.5 border-b">Nama Lengkap</th>
-                      <th className="p-3.5 border-b">JK</th>
-                      <th className="p-3.5 border-b">RT/RW</th>
-                      <th className="p-3.5 border-b">Pekerjaan</th>
-                      <th className="p-3.5 border-b">Pendidikan</th>
-                      <th className="p-3.5 border-b">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {wargaList.map((w) => (
-                      <tr key={w.id} className="hover:bg-slate-50/80 transition">
-                        <td className="p-3.5 font-mono text-xs font-semibold text-slate-500">{w.nik}</td>
-                        <td className="p-3.5 font-bold text-slate-800">{w.nama}</td>
-                        <td className="p-3.5 text-xs">{w.jenisKelamin === 'Laki-laki' ? 'L' : 'P'}</td>
-                        <td className="p-3.5 text-xs">{w.rt}/{w.rw}</td>
-                        <td className="p-3.5 text-xs">{w.pekerjaan}</td>
-                        <td className="p-3.5 text-xs">{w.pendidikan}</td>
-                        <td className="p-3.5">
-                          <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 font-bold rounded-lg text-[10px] uppercase">
-                            {w.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ==================== TAB 4: PETA SANGATTA ==================== */}
+        {/* ==================== TAB 3: PETA SANGATTA ==================== */}
         {activeTab === 'maps' && (
           <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 space-y-4">
             <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-3">
@@ -300,7 +225,7 @@ export default function App() {
           </div>
         )}
 
-        {/* ==================== TAB 5: BERITA & GALERI ==================== */}
+        {/* ==================== TAB 4: BERITA & GALERI ==================== */}
         {activeTab === 'berita' && (
           <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 space-y-8">
             <div className="space-y-4">
